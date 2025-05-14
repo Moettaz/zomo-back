@@ -20,5 +20,7 @@ class Transporteur extends Model
         'service_id',
         'disponibilite',
         'note_moyenne',
+        'gender',
+        'vehicule_type',
     ];
 }
