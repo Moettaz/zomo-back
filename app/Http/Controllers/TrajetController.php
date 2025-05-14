@@ -37,13 +37,15 @@ class TrajetController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'depart' => 'required|string',
-            'destination' => 'required|string',
-            'date_depart' => 'required|date',
-            'heure_depart' => 'required',
-            'places_disponibles' => 'required|integer|min:1',
+            'client_id' => 'required|exists:clients,id',
+            'transporteur_id' => 'required|exists:transporteurs,id',
+            'service_id' => 'required',
+            'date_heure_depart' => 'required|date',
+            'date_heure_arrivee' => 'required|date',
+            'point_depart' => 'required|string',
+            'point_arrivee' => 'required|string',
             'prix' => 'required|numeric|min:0',
-            'chauffeur_id' => 'required|exists:chauffeurs,id'
+            'etat' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -66,7 +68,7 @@ class TrajetController extends Controller
     public function show($id)
     {
         try {
-            $trajet = Trajet::find($id);
+            $trajet = Trajet::with('transporteur')->with('client')->find($id);
             if (!$trajet) {
                 return response()->json(['success' => false, 'message' => 'Trajet not found'], 404);
             }
@@ -90,13 +92,16 @@ class TrajetController extends Controller
     public function update(Request $request, $id)
     {
         $rules = [
-            'depart' => 'string',
-            'destination' => 'string',
-            'date_depart' => 'date',
-            'heure_depart' => 'string',
-            'places_disponibles' => 'integer|min:1',
+            'client_id' => 'exists:clients,id',
+            'transporteur_id' => 'exists:transporteurs,id',
+            'service_id' => 'exists:services,id',
+            'date_heure_depart' => 'date',
+            'date_heure_arrivee' => 'date|after:date_heure_depart',
+            'point_depart' => 'string',
+            'point_arrivee' => 'string',
             'prix' => 'numeric|min:0',
-            'chauffeur_id' => 'exists:chauffeurs,id'
+            'note' => 'nullable|numeric|min:0|max:5',
+            'etat' => 'string'
         ];
 
         $data = $request->all();
@@ -143,7 +148,9 @@ class TrajetController extends Controller
     public function getTrajetsByTransporteur($transporteur_id)
     {
         try {
-            $trajets = Trajet::where('transporteur_id', $transporteur_id)->get();
+            $trajets = Trajet::with('client')
+                ->where('transporteur_id', $transporteur_id)
+                ->get();
             return response()->json([
                 'success' => true,
                 'data' => $trajets
@@ -162,8 +169,7 @@ class TrajetController extends Controller
     public function getTrajetsByClient($client_id)
     {
         try {
-            $trajets = Trajet::where('client_id', $client_id)->get();
-            
+            $trajets = Trajet::with('transporteur')->where('client_id', $client_id)->get();
             return response()->json([
                 'success' => true,
                 'data' => $trajets

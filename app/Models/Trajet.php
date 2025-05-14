@@ -21,4 +21,13 @@ class Trajet extends Model
         'note',
         'etat'
     ];
+
+    public function transporteur()
+    {
+        return $this->belongsTo(Transporteur::class);
+    }
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }
