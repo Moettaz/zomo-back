@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TransporteurController;
 use App\Http\Controllers\TrajetController;
+use App\Http\Controllers\ReservationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,6 +43,15 @@ Route::middleware('api')->group(function () {
     Route::delete('/trajets/{id}', [TrajetController::class, 'destroy']);
     Route::get('/trajets/transporteur/{transporteur_id}', [TrajetController::class, 'getTrajetsByTransporteur']);
     Route::get('/trajets/client/{client_id}', [TrajetController::class, 'getTrajetsByClient']);
+
+    // Reservation Routes
+    Route::get('/reservations', [ReservationController::class, 'index']);
+    Route::post('/reservations', [ReservationController::class, 'store']);
+    Route::get('/reservations/{id}', [ReservationController::class, 'show']);
+    Route::put('/reservations/{id}', [ReservationController::class, 'update']);
+    Route::delete('/reservations/{id}', [ReservationController::class, 'destroy']);
+    Route::get('/reservations/transporteur/{transporteur_id}', [ReservationController::class, 'getReservationsByTransporteur']);
+    Route::get('/reservations/client/{client_id}', [ReservationController::class, 'getReservationsByClient']);
 });
 
 // Protected Routes

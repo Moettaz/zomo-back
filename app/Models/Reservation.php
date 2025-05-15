@@ -15,6 +15,18 @@ class Reservation extends Model
         'service_id',
         'date_reservation',
         'status',
-        'commentaire'
+        'commentaire',
+        'type_menagement',
+        'type_vehicule',
+        'distance',
+        'from',
+        'to',
+        'heure_reservation',
+        'etage',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
