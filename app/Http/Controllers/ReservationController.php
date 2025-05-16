@@ -3,13 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reservation;
-use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Requests\StoreReservationRequest;
-use App\Http\Requests\UpdateReservationRequest;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Client;
 class ReservationController extends Controller
 {
     /**
@@ -45,15 +42,16 @@ class ReservationController extends Controller
             'date_reservation' => 'required|date',
             'status' => 'required|string',
             'commentaire' => 'nullable|string',
-            'type_menagement' => 'required|string',
-            'type_vehicule' => 'required|string',
-            'distance' => 'required|string',
+            'colis_size' => 'nullable|string',
+            'type_menagement' => 'nullable|string',
+            'type_vehicule' => 'nullable|string',
+            'distance' => 'nullable|string',
             'from' => 'required|string',
             'to' => 'required|string',
-            'heure_reservation' => 'required|string',
-            'etage' => 'required|integer',
-            'products' => 'required|array',
-            'products.*.name' => 'required|string',
+            'heure_reservation' => 'nullable|string',
+            'etage' => 'nullable|integer',
+            'products' => 'nullable|array',
+            'products.*.name' => 'nullable|string',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -64,19 +62,23 @@ class ReservationController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $reservation = Reservation::create($request->except('products'));
-            
-            foreach ($request->products as $productData) {
-                $reservation->products()->create([
-                    'name' => $productData['name'],
-                ]);
+            $client = Client::find($request->client_id);
+            $client->points += 5;
+            $client->save();
+            if ($request->has('products')) {
+                foreach ($request->products as $productData) {
+                    $reservation->products()->create([
+                        'name' => $productData['name'],
+                    ]);
+                }
             }
-            
+
             DB::commit();
-            
+
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'data' => $reservation->load('products')
             ], 201);
         } catch (\Exception $e) {
@@ -153,7 +155,7 @@ class ReservationController extends Controller
             if ($request->has('products')) {
                 // Delete existing products
                 $reservation->products()->delete();
-                
+
                 // Create new products
                 foreach ($request->products as $productData) {
                     $reservation->products()->create([
@@ -163,9 +165,9 @@ class ReservationController extends Controller
             }
 
             DB::commit();
-            
+
             return response()->json([
-                'success' => true, 
+                'success' => true,
                 'data' => $reservation->load('products')
             ], 200);
         } catch (\Exception $e) {
@@ -197,7 +199,19 @@ class ReservationController extends Controller
     public function getReservationsByTransporteur($transporteur_id)
     {
         try {
-            $reservations = Reservation::where('transporteur_id', $transporteur_id)->get();
+            $reservations = Reservation::where('transporteur_id', $transporteur_id)->with('client')->get();
+            
+            if (!$reservations->isEmpty()) {
+                foreach ($reservations as $reservation) {
+                    if ($reservation->service_id == 2) {
+                        $reservations = Reservation::where('transporteur_id', $transporteur_id)
+                            ->with('client', 'products')
+                            ->get();
+                        break;
+                    }
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $reservations
@@ -216,7 +230,17 @@ class ReservationController extends Controller
     public function getReservationsByClient($client_id)
     {
         try {
-            $reservations = Reservation::where('client_id', $client_id)->get();
+            $reservations = Reservation::where('client_id', $client_id)->with('transporteur')->get();
+            if (!$reservations->isEmpty()) {
+                foreach ($reservations as $reservation) {
+                    if ($reservation->service_id == 2) {
+                        $reservations = Reservation::where('client_id', $client_id)
+                            ->with('transporteur', 'products')
+                            ->get();
+                        break;
+                    }
+                }
+            }
             return response()->json([
                 'success' => true,
                 'data' => $reservations

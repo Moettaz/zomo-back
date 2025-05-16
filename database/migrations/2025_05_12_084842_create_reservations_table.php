@@ -19,13 +19,14 @@ return new class extends Migration
             $table->dateTime('date_reservation');
             $table->string('status');
             $table->text('commentaire')->nullable();
-            $table->string('type_menagement');
-            $table->string('type_vehicule');
-            $table->decimal('distance', 8, 2);
+            $table->string('colis_size')->nullable();
+            $table->string('type_menagement')->nullable();
+            $table->string('type_vehicule')->nullable();
+            $table->string('distance')->nullable();
             $table->string('from');
             $table->string('to');
-            $table->time('heure_reservation');
-            $table->integer('etage');
+            $table->string('heure_reservation')->nullable();
+            $table->integer('etage')->nullable();
             $table->timestamps();
         });
     }

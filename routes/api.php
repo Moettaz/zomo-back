@@ -27,6 +27,7 @@ Route::middleware('api')->group(function () {
     Route::get('/clients/{id}', [ClientController::class, 'show']);
     Route::put('/clients/{id}', [ClientController::class, 'update']);
     Route::delete('/clients/{id}', [ClientController::class, 'destroy']);
+    Route::get('/profile/{userId}', [UserController::class, 'getProfile']);
 
     // Transporteur Routes
     Route::get('/transporteurs', [TransporteurController::class, 'index']);

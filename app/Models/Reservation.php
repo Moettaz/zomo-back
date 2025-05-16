@@ -23,10 +23,19 @@ class Reservation extends Model
         'to',
         'heure_reservation',
         'etage',
+        'colis_size',
     ];
 
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+    public function transporteur()
+    {
+        return $this->belongsTo(Transporteur::class);
+    }
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 }

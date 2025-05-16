@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Trajet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Requests\StoreTrajetRequest;
-use App\Http\Requests\UpdateTrajetRequest;
-
+use App\Models\Client;
 class TrajetController extends Controller
 {
     /**
@@ -56,6 +54,9 @@ class TrajetController extends Controller
 
         try {
             $trajet = Trajet::create($request->all());
+            $client = Client::find($request->client_id);
+            $client->points += 15;
+            $client->save();
             return response()->json(['success' => true, 'data' => $trajet], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

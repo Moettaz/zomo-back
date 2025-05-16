@@ -126,4 +126,38 @@ class UserController extends Controller
             'token' => $token
         ]);
     }
+
+    /**
+     * Get user profile data based on user ID and role
+     *
+     * @param int $userId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProfile($userId)
+    {
+        try {
+            $user = User::with('role')->findOrFail($userId);
+            $specificData = null;
+
+            switch ($user->role->slug) {
+                case 'client':
+                    $specificData = Client::where('user_id', $userId)->first();
+                    break;
+                case 'transporteur':
+                    $specificData = Transporteur::where('user_id', $userId)->first();
+                    break;
+            }
+
+            return response()->json([
+                'user' => $user,
+                'specific_data' => $specificData
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve profile',
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
 }
