@@ -60,6 +60,7 @@ class UserController extends Controller
                         'username' => $request->name,
                         'password' => $user->password,
                         'phone' => $request->phone,
+                        'service_id' => $request->role_id == 3 ? 1 : 2,
                     ]);
                     break;
             }
@@ -152,7 +153,6 @@ class UserController extends Controller
                 'user' => $user,
                 'specific_data' => $specificData
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve profile',

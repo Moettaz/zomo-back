@@ -21,7 +21,7 @@ use App\Http\Controllers\ReservationController;
 Route::middleware('api')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [UserController::class, 'login']);
-    
+
     // Client Routes
     Route::get('/clients', [ClientController::class, 'index']);
     Route::get('/clients/{id}', [ClientController::class, 'show']);
@@ -53,6 +53,10 @@ Route::middleware('api')->group(function () {
     Route::delete('/reservations/{id}', [ReservationController::class, 'destroy']);
     Route::get('/reservations/transporteur/{transporteur_id}', [ReservationController::class, 'getReservationsByTransporteur']);
     Route::get('/reservations/client/{client_id}', [ReservationController::class, 'getReservationsByClient']);
+
+    // Call History Routes
+    Route::post('/call-history', [CallHistoryController::class, 'store']);
+    Route::get('/call-history/{id}', [CallHistoryController::class, 'getById']);
 });
 
 // Protected Routes
