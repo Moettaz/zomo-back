@@ -7,6 +7,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\TransporteurController;
 use App\Http\Controllers\TrajetController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\CallHistoryController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
