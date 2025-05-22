@@ -8,6 +8,7 @@ use App\Http\Controllers\TransporteurController;
 use App\Http\Controllers\TrajetController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\CallHistoryController;
+use App\Http\Controllers\NotificationsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -58,6 +59,9 @@ Route::middleware('api')->group(function () {
     // Call History Routes
     Route::post('/call-history', [CallHistoryController::class, 'store']);
     Route::get('/call-history/{id}', [CallHistoryController::class, 'getById']);
+
+    // Notification Routes
+    Route::post('/notifications', [NotificationsController::class, 'store']);
 });
 
 // Protected Routes
