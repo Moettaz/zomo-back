@@ -54,7 +54,7 @@ class NotificationsController extends Controller
             // Prepare data for notification
             $data = array();
             $data["notification_id"] = $notification->id;
-            $device_token = User::where('id', $request->receiver_id)->first()->device_token;
+            $device_token = $request->token;
             // Send notification
             date_default_timezone_set('Africa/Tunis');
             $fcmResponse = Notifications::toSingleDevice(
