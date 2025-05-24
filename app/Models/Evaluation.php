@@ -13,5 +13,15 @@ class Evaluation extends Model
         'client_id',
         'transporteur_id',
         'note',
-        ];
+    ];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function transporteur()
+    {
+        return $this->belongsTo(Transporteur::class);
+    }
 }

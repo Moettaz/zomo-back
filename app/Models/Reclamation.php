@@ -19,4 +19,35 @@ class Reclamation extends Model
         'status',
         'priorite'
     ];
+
+    /**
+     * Get the client that owns the reclamation.
+     */
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    /**
+     * Get the transporteur that owns the reclamation.
+     */
+    public function transporteur()
+    {
+        return $this->belongsTo(Transporteur::class);
+    }
+
+    /**
+     * Get the service that owns the reclamation.
+     */
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    /**
+     * Get the date_creation attribute in a specific format.
+     */
+    protected $casts = [
+        'date_creation' => 'datetime',
+    ];
 }

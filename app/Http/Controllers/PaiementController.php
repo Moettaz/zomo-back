@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Paiement;
 use App\Http\Requests\StorePaiementRequest;
 use App\Http\Requests\UpdatePaiementRequest;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class PaiementController extends Controller
 {
@@ -25,11 +27,16 @@ class PaiementController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created payment in storage.
      */
-    public function store(StorePaiementRequest $request)
+    public function store(StorePaiementRequest $request): JsonResponse
     {
-        //
+        $paiement = Paiement::create($request->validated());
+        
+        return response()->json([
+            'message' => 'Payment created successfully',
+            'data' => $paiement
+        ], 201);
     }
 
     /**
@@ -62,5 +69,33 @@ class PaiementController extends Controller
     public function destroy(Paiement $paiement)
     {
         //
+    }
+
+    /**
+     * Get all payments for a specific transporter.
+     */
+    public function getByTransporteurId($transporteurId): JsonResponse
+    {
+        $paiements = Paiement::where('transporteur_id', $transporteurId)
+            ->orderBy('date_paiement', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => $paiements
+        ]);
+    }
+
+    /**
+     * Get all payments for a specific client.
+     */
+    public function getByClientId($clientId): JsonResponse
+    {
+        $paiements = Paiement::where('client_id', $clientId)
+            ->orderBy('date_paiement', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => $paiements
+        ]);
     }
 }

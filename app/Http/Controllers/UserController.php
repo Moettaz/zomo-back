@@ -61,6 +61,8 @@ class UserController extends Controller
                         'password' => $user->password,
                         'phone' => $request->phone,
                         'service_id' => $request->role_id == 3 ? 1 : 2,
+                        'gender' => 'female',
+                        'vehicule_type' => 'taxi',
                     ]);
                     break;
             }
@@ -158,6 +160,38 @@ class UserController extends Controller
                 'message' => 'Failed to retrieve profile',
                 'error' => $e->getMessage()
             ], 404);
+        }
+    }
+
+    /**
+     * Update user's FCM device token
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateDeviceToken(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'device_token' => 'required|string',
+        ]);
+
+        try {
+            $user = User::findOrFail($request->user_id);
+            $user->device_token = $request->device_token;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Device token updated successfully',
+                'user' => $user,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update device token',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
         }
     }
 }

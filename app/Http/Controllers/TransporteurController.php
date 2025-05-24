@@ -6,6 +6,7 @@ use App\Models\Transporteur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Evaluation;
 
 class TransporteurController extends Controller
 {
@@ -100,6 +101,7 @@ class TransporteurController extends Controller
             'password' => 'nullable|min:8',
             'phone' => 'digits:8',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            
         ];
 
         $data = $request->all();
@@ -128,6 +130,11 @@ class TransporteurController extends Controller
             }
 
             $transporteur->update($data);
+            $evaluation = Evaluation::create([
+                'client_id' => $request->client_id,
+                'transporteur_id' => $id,
+                'note' => $request->note,
+            ]);
             return response()->json(['success' => true, 'data' => $transporteur], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

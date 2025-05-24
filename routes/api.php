@@ -9,6 +9,8 @@ use App\Http\Controllers\TrajetController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\CallHistoryController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\EvaluationController;
+use App\Http\Controllers\ReclamationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -62,6 +64,23 @@ Route::middleware('api')->group(function () {
 
     // Notification Routes
     Route::post('/notifications', [NotificationsController::class, 'store']);
+
+    // Evaluation Routes
+    Route::post('/evaluations', [EvaluationController::class, 'store']);
+    Route::get('/evaluations/client/{clientId}', [EvaluationController::class, 'getByClientId']);
+    Route::get('/evaluations/transporteur/{transporteurId}', [EvaluationController::class, 'getByTransporteurId']);
+
+    // Reclamation Routes
+    Route::get('/reclamations', [ReclamationController::class, 'index']);
+    Route::post('/reclamations', [ReclamationController::class, 'store']);
+    Route::get('/reclamations/{reclamation}', [ReclamationController::class, 'show']);
+    Route::put('/reclamations/{reclamation}', [ReclamationController::class, 'update']);
+    Route::delete('/reclamations/{reclamation}', [ReclamationController::class, 'destroy']);
+    Route::get('/reclamations/client/{client_id}', [ReclamationController::class, 'getByClientId']);
+    Route::get('/reclamations/transporteur/{transporteur_id}', [ReclamationController::class, 'getByTransporteurId']);
+
+    // Update Device Token
+    Route::post('/update-device-token', [UserController::class, 'updateDeviceToken']);
 });
 
 // Protected Routes

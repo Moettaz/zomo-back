@@ -6,6 +6,7 @@ use App\Models\Trajet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Client;
+use App\Models\Paiement;
 class TrajetController extends Controller
 {
     /**
@@ -43,7 +44,8 @@ class TrajetController extends Controller
             'point_depart' => 'required|string',
             'point_arrivee' => 'required|string',
             'prix' => 'required|numeric|min:0',
-            'etat' => 'required|string'
+            'etat' => 'required|string',
+            'methode_paiement' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -57,6 +59,16 @@ class TrajetController extends Controller
             $client = Client::find($request->client_id);
             $client->points += 15;
             $client->save();
+            $paiement = Paiement::create([
+                'client_id' => $request->client_id,
+                'transporteur_id' => $request->transporteur_id,
+                'service_id' => $request->service_id,
+                'montant' => $request->prix,
+                'methode_paiement' => $request->methode_paiement,
+                'date_paiement' => now(),
+                'status' => 'payed',
+                'reference' => 'REF-' . now()->timestamp,
+            ]);
             return response()->json(['success' => true, 'data' => $trajet], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

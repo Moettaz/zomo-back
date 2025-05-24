@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Client;
+use App\Models\Paiement;
 class ReservationController extends Controller
 {
     /**
@@ -52,6 +53,7 @@ class ReservationController extends Controller
             'etage' => 'nullable|integer',
             'products' => 'nullable|array',
             'products.*.name' => 'nullable|string',
+            'methode_paiement' => 'required|string',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -67,6 +69,16 @@ class ReservationController extends Controller
             $client = Client::find($request->client_id);
             $client->points += 5;
             $client->save();
+            $paiement = Paiement::create([
+                'client_id' => $request->client_id,
+                'transporteur_id' => $request->transporteur_id,
+                'service_id' => $request->service_id,
+                'montant' => 15,
+                'methode_paiement' => $request->methode_paiement,
+                'date_paiement' => now(),
+                'status' => 'payed',
+                'reference' => 'REF-' . now()->timestamp,
+            ]);
             if ($request->has('products')) {
                 foreach ($request->products as $productData) {
                     $reservation->products()->create([
