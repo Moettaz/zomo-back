@@ -11,6 +11,7 @@ use App\Http\Controllers\CallHistoryController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\ReclamationController;
+use App\Http\Controllers\PaiementController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -64,7 +65,7 @@ Route::middleware('api')->group(function () {
 
     // Notification Routes
     Route::post('/notifications', [NotificationsController::class, 'store']);
-
+    Route::get('/notifications/user/{userId}', [NotificationsController::class, 'getUserNotifications']);
     // Evaluation Routes
     Route::post('/evaluations', [EvaluationController::class, 'store']);
     Route::get('/evaluations/client/{clientId}', [EvaluationController::class, 'getByClientId']);
@@ -81,6 +82,10 @@ Route::middleware('api')->group(function () {
 
     // Update Device Token
     Route::post('/update-device-token', [UserController::class, 'updateDeviceToken']);
+
+    // Paiement Routes
+    Route::get('/paiements/transporteur/{transporteur_id}', [PaiementController::class, 'getByTransporteurId']);
+    Route::get('/paiements/client/{client_id}', [PaiementController::class, 'getByClientId']);
 });
 
 // Protected Routes

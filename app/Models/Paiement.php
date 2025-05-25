@@ -19,4 +19,23 @@ class Paiement extends Model
         'status',
         'reference'
     ];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function transporteur()
+    {
+        return $this->belongsTo(Transporteur::class);
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    
+
+    
 }

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Client;
 use App\Models\Paiement;
+use App\Models\Notifications;
+use App\Models\User;
 class TrajetController extends Controller
 {
     /**
@@ -69,6 +71,31 @@ class TrajetController extends Controller
                 'status' => 'payed',
                 'reference' => 'REF-' . now()->timestamp,
             ]);
+
+            // Send notification to transporteur
+            $transporteurNotification = new Notifications();
+            $transporteurNotification->sender_id = $request->client_id;
+            $transporteurNotification->receiver_id = $request->transporteur_id;
+            $transporteurNotification->service_id = $request->service_id;
+            $transporteurNotification->type = 'Nouveau trajet';
+            $transporteurNotification->message = 'Un nouveau trajet vous a été assigné. Point de départ: ' . $request->point_depart;
+            $transporteurNotification->status = 'pending';
+            $transporteurNotification->date_notification = now();
+            $transporteurNotification->save();
+
+            // Send FCM notification to transporteur
+            $data = ['notification_id' => $transporteurNotification->id];
+            $device_token = User::where('id', $request->transporteur_id)->first()->device_token;
+            date_default_timezone_set('Africa/Tunis');
+            $fcmResponse = Notifications::toSingleDevice(
+                $device_token,
+                'Nouveau trajet',
+                'Un nouveau trajet vous a été assigné. Point de départ: ' . $request->point_depart,
+                null,
+                $data,
+                'trajet'
+            );
+            
             return response()->json(['success' => true, 'data' => $trajet], 201);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -132,6 +159,29 @@ class TrajetController extends Controller
             }
 
             $trajet->update($data);
+            // Send notification to client
+            $clientNotification = new Notifications();
+            $clientNotification->sender_id = $request->transporteur_id;
+            $clientNotification->receiver_id = $request->client_id;
+            $clientNotification->service_id = $request->service_id;
+            $clientNotification->type = 'Trajet modifié';
+            $clientNotification->message = 'Votre trajet a été modifié. Statut: ' . $request->etat;
+            $clientNotification->status = 'pending';
+            $clientNotification->date_notification = now();
+            $clientNotification->save();
+
+            // Send FCM notification to transporteur
+            $data = ['notification_id' => $clientNotification->id];
+            $device_token = User::where('id', $request->client_id)->first()->device_token;
+            date_default_timezone_set('Africa/Tunis');
+            $fcmResponse = Notifications::toSingleDevice(
+                $device_token,
+                'Trajet modifié',
+                'Votre trajet a été modifié. Statut: ' . $request->etat,
+                null,
+                $data,
+                'trajet'
+            );
             return response()->json(['success' => true, 'data' => $trajet], 200);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

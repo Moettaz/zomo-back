@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Client;
 use App\Models\Paiement;
+use App\Models\Notifications;
+use App\Models\User;
 class ReservationController extends Controller
 {
     /**
@@ -79,6 +81,29 @@ class ReservationController extends Controller
                 'status' => 'payed',
                 'reference' => 'REF-' . now()->timestamp,
             ]);
+            // Send notification to transporteur
+            $transporteurNotification = new Notifications();
+            $transporteurNotification->sender_id = $request->client_id;
+            $transporteurNotification->receiver_id = $request->transporteur_id;
+            $transporteurNotification->service_id = $request->service_id;
+            $transporteurNotification->type = 'Nouvelle réservation';
+            $transporteurNotification->message = 'Une nouvelle réservation vous a été assignée. Point de départ: ' . $request->from;
+            $transporteurNotification->status = 'pending';
+            $transporteurNotification->date_notification = now();
+            $transporteurNotification->save();
+
+            // Send FCM notification to transporteur
+            $data = ['notification_id' => $transporteurNotification->id];
+            $device_token = User::where('id', $request->transporteur_id)->first()->device_token;
+            date_default_timezone_set('Africa/Tunis');
+            $fcmResponse = Notifications::toSingleDevice(
+                $device_token,
+                'Nouvelle réservation',
+                'Une nouvelle réservation vous a été assignée. Point de départ: ' . $request->from,
+                null,
+                $data,
+                'reservation'
+            );
             if ($request->has('products')) {
                 foreach ($request->products as $productData) {
                     $reservation->products()->create([
@@ -163,7 +188,28 @@ class ReservationController extends Controller
             }
 
             $reservation->update($request->except('products'));
+            $clientNotification = new Notifications();
+            $clientNotification->sender_id = $request->transporteur_id;
+            $clientNotification->receiver_id = $request->client_id;
+            $clientNotification->service_id = $request->service_id;
+            $clientNotification->type = 'Réservation modifiée';
+            $clientNotification->message = 'Votre réservation a été modifiée. Statut: ' . $request->etat;
+            $clientNotification->status = 'pending';
+            $clientNotification->date_notification = now();
+            $clientNotification->save();
 
+            // Send FCM notification to transporteur
+            $data = ['notification_id' => $clientNotification->id];
+            $device_token = User::where('id', $request->client_id)->first()->device_token;
+            date_default_timezone_set('Africa/Tunis');
+            $fcmResponse = Notifications::toSingleDevice(
+                $device_token,
+                'Réservation modifiée',
+                'Votre réservation a été modifiée. Statut: ' . $request->etat,
+                null,
+                $data,
+                'reservation'
+            );
             if ($request->has('products')) {
                 // Delete existing products
                 $reservation->products()->delete();

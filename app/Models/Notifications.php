@@ -109,7 +109,7 @@ class Notifications extends Model
     private static function getAccessToken()
     {
         $client = new GoogleClient();
-        $client->setAuthConfig(storage_path('app/zomo-b0465-firebase-adminsdk-fbsvc-869c7879e5.json'));
+        $client->setAuthConfig(storage_path('app/zomo-b0465-firebase-adminsdk-fbsvc-4b7e865b8d.json'));
         $client->setScopes(['https://www.googleapis.com/auth/firebase.messaging', 'https://www.googleapis.com/auth/cloud-platform']);
 
         if ($client->isAccessTokenExpired()) {

@@ -77,6 +77,7 @@ class PaiementController extends Controller
     public function getByTransporteurId($transporteurId): JsonResponse
     {
         $paiements = Paiement::where('transporteur_id', $transporteurId)
+            ->with('client',  'service')
             ->orderBy('date_paiement', 'desc')
             ->get();
 

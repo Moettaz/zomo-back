@@ -54,7 +54,7 @@ class NotificationsController extends Controller
             // Prepare data for notification
             $data = array();
             $data["notification_id"] = $notification->id;
-            $device_token = $request->token;
+            $device_token = User::where('id', $request->receiver_id)->first()->device_token;
             // Send notification
             date_default_timezone_set('Africa/Tunis');
             $fcmResponse = Notifications::toSingleDevice(
@@ -138,6 +138,30 @@ class NotificationsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete notification',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get notifications where user is either receiver or sender
+     */
+    public function getUserNotifications($userId)
+    {
+        try {
+            $notifications = Notifications::where('receiver_id', $userId)
+                ->orWhere('sender_id', $userId)
+                ->orderBy('date_notification', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $notifications
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch notifications',
                 'error' => $e->getMessage()
             ], 500);
         }
