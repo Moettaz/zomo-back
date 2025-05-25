@@ -23,7 +23,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        'device_token'
+        'device_token',
+        'reset_code',
+        'reset_code_expires_at'
     ];
 
     /**
@@ -34,6 +36,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'reset_code',
     ];
 
     /**
@@ -43,6 +46,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'reset_code_expires_at' => 'datetime',
     ];
 
     /**

@@ -86,6 +86,11 @@ Route::middleware('api')->group(function () {
     // Paiement Routes
     Route::get('/paiements/transporteur/{transporteur_id}', [PaiementController::class, 'getByTransporteurId']);
     Route::get('/paiements/client/{client_id}', [PaiementController::class, 'getByClientId']);
+
+    // Password Reset Routes
+    Route::post('/forgot-password', [UserController::class, 'sendResetCode']);
+    Route::post('/verify-reset-code', [UserController::class, 'verifyResetCode']);
+    Route::post('/reset-password', [UserController::class, 'resetPassword']);
 });
 
 // Protected Routes

@@ -10,8 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 class UserController extends Controller
 {
     /**
@@ -189,6 +191,167 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update device token',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Send reset code to user's email
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sendResetCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        try {
+            $user = User::where('email', $request->email)->first();
+            
+            // Generate a 4-digit code
+            $resetCode = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+            
+            // Set expiration time (1 hour from now)
+            $expiresAt = now()->addHour();
+            
+            // Update user with reset code
+            $user->update([
+                'reset_code' => Hash::make($resetCode),
+                'reset_code_expires_at' => $expiresAt,
+            ]);
+
+            // Send email with reset code
+            Mail::raw("Your password reset code is: {$resetCode}\n\nThis code will expire in 1 hour.", function($message) use ($user) {
+                $message->to($user->email)
+                        ->subject('Password Reset Code');
+            });
+
+            return response()->json([
+                'message' => 'Reset code has been sent to your email',
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to send reset code',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify reset code
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyResetCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'code' => 'required|string|size:4',
+        ]);
+
+        try {
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user->reset_code || !$user->reset_code_expires_at) {
+                Log::error('No reset code found');
+                return response()->json([
+                    'message' => 'No reset code found',
+                    'success' => false
+                ], 400);
+            }
+
+            if ($user->reset_code_expires_at->isPast()) {
+                Log::error('Reset code has expired');
+                return response()->json([
+                    'message' => 'Reset code has expired',
+                    'success' => false
+                ], 400);
+            }
+
+            if (!Hash::check($request->code, $user->reset_code)) {
+                Log::error('Invalid reset code');
+                return response()->json([
+                    'message' => 'Invalid reset code',
+                    'success' => false
+                ], 400);
+            }
+
+            return response()->json([
+                
+                'message' => 'Reset code is valid',
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to verify reset code',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Reset password
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'code' => 'required|string|size:4',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        try {
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user->reset_code || !$user->reset_code_expires_at) {
+                return response()->json([
+                    'message' => 'No reset code found',
+                    'success' => false
+                ], 400);
+            }
+
+            if ($user->reset_code_expires_at->isPast()) {
+                return response()->json([
+                    'message' => 'Reset code has expired',
+                    'success' => false
+                ], 400);
+            }
+
+            if (!Hash::check($request->code, $user->reset_code)) {
+                return response()->json([
+                    'message' => 'Invalid reset code',
+                    'success' => false
+                ], 400);
+            }
+
+            // Update password and clear reset code
+            $user->update([
+                'password' => Hash::make($request->password),
+                'reset_code' => null,
+                'reset_code_expires_at' => null,
+            ]);
+
+            return response()->json([
+                'message' => 'Password has been reset successfully',
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to reset password',
                 'error' => $e->getMessage(),
                 'success' => false
             ], 500);
