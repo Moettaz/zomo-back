@@ -14,7 +14,10 @@ class EvaluationController extends Controller
      */
     public function index()
     {
-        //
+        $evaluations = Evaluation::with(['client', 'transporteur'])->get();
+        return response()->json([
+            'data' => $evaluations
+        ]);
     }
 
     /**
@@ -31,7 +34,7 @@ class EvaluationController extends Controller
     public function store(StoreEvaluationRequest $request)
     {
         $evaluation = Evaluation::create($request->validated());
-        
+
         // Update transporteur's average note
         $transporteur = Transporteur::find($request->transporteur_id);
         $averageNote = Evaluation::where('transporteur_id', $request->transporteur_id)->avg('note');

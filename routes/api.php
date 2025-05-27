@@ -66,8 +66,11 @@ Route::middleware('api')->group(function () {
     // Notification Routes
     Route::post('/notifications', [NotificationsController::class, 'store']);
     Route::get('/notifications/user/{userId}', [NotificationsController::class, 'getUserNotifications']);
+    Route::get('/notifications', [NotificationsController::class, 'index']);
+
     // Evaluation Routes
     Route::post('/evaluations', [EvaluationController::class, 'store']);
+    Route::get('/evaluations', [EvaluationController::class, 'index']);
     Route::get('/evaluations/client/{clientId}', [EvaluationController::class, 'getByClientId']);
     Route::get('/evaluations/transporteur/{transporteurId}', [EvaluationController::class, 'getByTransporteurId']);
 
@@ -86,6 +89,7 @@ Route::middleware('api')->group(function () {
     // Paiement Routes
     Route::get('/paiements/transporteur/{transporteur_id}', [PaiementController::class, 'getByTransporteurId']);
     Route::get('/paiements/client/{client_id}', [PaiementController::class, 'getByClientId']);
+    Route::get('/paiements', [PaiementController::class, 'index']);
 
     // Password Reset Routes
     Route::post('/forgot-password', [UserController::class, 'sendResetCode']);
